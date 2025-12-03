@@ -1,26 +1,76 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
+import GlobalStyle from './styles/GlobalStyle';
+import Layout from './components/Layout';
+import LoginPage from './pages/LoginPage';
+import PostsPage from './pages/PostsPage';
+import DeletedPostsPage from './pages/DeletedPostsPage';
 
-function App() {
+const App: React.FC = () => {
+  const { isAuthenticated, loading, login, logout, admin } = useAuth();
+
+  if (loading) {
+    return (
+      <>
+        <GlobalStyle />
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          background: '#f5f5f5'
+        }}>
+          로딩 중...
+        </div>
+      </>
+    );
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <GlobalStyle />
+      <Router>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              isAuthenticated ? (
+                <Navigate to="/posts" replace />
+              ) : (
+                <LoginPage onLogin={login} />
+              )
+            }
+          />
+          <Route
+            path="/posts"
+            element={
+              isAuthenticated ? (
+                <Layout onLogout={logout} adminName={admin?.name}>
+                  <PostsPage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/posts/deleted"
+            element={
+              isAuthenticated ? (
+                <Layout onLogout={logout} adminName={admin?.name}>
+                  <DeletedPostsPage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route path="*" element={<Navigate to={isAuthenticated ? '/posts' : '/login'} replace />} />
+        </Routes>
+      </Router>
+    </>
   );
-}
+};
 
 export default App;
