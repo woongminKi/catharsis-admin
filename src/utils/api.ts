@@ -88,4 +88,65 @@ export const adminConsultationAPI = {
     api.post('/admin/consultations/bulk-permanent-delete', { ids }),
 };
 
+// Admin Passer APIs
+export const adminPasserAPI = {
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    keyword?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => api.get('/admin/passers', { params }),
+
+  getOne: (id: string) => api.get(`/admin/passers/${id}`),
+
+  create: (data: { title: string; thumbnailUrl: string; imageUrls?: string[] }) =>
+    api.post('/admin/passers', data),
+
+  update: (id: string, data: { title?: string; thumbnailUrl?: string; imageUrls?: string[] }) =>
+    api.patch(`/admin/passers/${id}`, data),
+
+  delete: (id: string) => api.delete(`/admin/passers/${id}`),
+
+  getDeleted: (params?: { page?: number; limit?: number }) =>
+    api.get('/admin/passers/deleted/list', { params }),
+
+  restore: (id: string) => api.post(`/admin/passers/${id}/restore`),
+
+  permanentDelete: (id: string) => api.delete(`/admin/passers/${id}/permanent`),
+
+  bulkDelete: (ids: string[]) => api.post('/admin/passers/bulk-delete', { ids }),
+
+  bulkRestore: (ids: string[]) => api.post('/admin/passers/bulk-restore', { ids }),
+
+  bulkPermanentDelete: (ids: string[]) =>
+    api.post('/admin/passers/bulk-permanent-delete', { ids }),
+};
+
+// Image upload API
+export const imageAPI = {
+  upload: (file: File, folder: string = 'passers') => {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('folder', folder);
+    return api.post('/images/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  uploadMultiple: (files: File[], folder: string = 'passers') => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('images', file);
+    });
+    formData.append('folder', folder);
+    return api.post('/images/upload-multiple', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+};
+
 export default api;

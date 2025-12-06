@@ -27,6 +27,10 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout, adminName }) => {
           <NavItem to="/posts/deleted">
             삭제된 게시글 관리
           </NavItem>
+          <NavDivider />
+          <NavItem to="/passers" end>
+            실시간 합격자 관리
+          </NavItem>
         </Nav>
         <SidebarFooter>
           <AdminInfo>{adminName || '관리자'}님</AdminInfo>
@@ -91,6 +95,12 @@ const NavItem = styled(NavLink)`
     color: white;
     border-left: 3px solid #4dabf7;
   }
+`;
+
+const NavDivider = styled.div`
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 12px 0;
 `;
 
 const SidebarFooter = styled.div`

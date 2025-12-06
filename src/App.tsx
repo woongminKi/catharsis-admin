@@ -6,6 +6,8 @@ import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import PostsPage from './pages/PostsPage';
 import DeletedPostsPage from './pages/DeletedPostsPage';
+import PassersPage from './pages/PassersPage';
+import PasserWritePage from './pages/PasserWritePage';
 
 const App: React.FC = () => {
   const { isAuthenticated, loading, login, logout, admin } = useAuth();
@@ -60,6 +62,42 @@ const App: React.FC = () => {
               isAuthenticated ? (
                 <Layout onLogout={logout} adminName={admin?.name}>
                   <DeletedPostsPage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/passers"
+            element={
+              isAuthenticated ? (
+                <Layout onLogout={logout} adminName={admin?.name}>
+                  <PassersPage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/passers/write"
+            element={
+              isAuthenticated ? (
+                <Layout onLogout={logout} adminName={admin?.name}>
+                  <PasserWritePage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/passers/write/:id"
+            element={
+              isAuthenticated ? (
+                <Layout onLogout={logout} adminName={admin?.name}>
+                  <PasserWritePage />
                 </Layout>
               ) : (
                 <Navigate to="/login" replace />
