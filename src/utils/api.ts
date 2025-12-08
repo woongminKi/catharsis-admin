@@ -123,6 +123,41 @@ export const adminPasserAPI = {
     api.post('/admin/passers/bulk-permanent-delete', { ids }),
 };
 
+// Admin Notice APIs
+export const adminNoticeAPI = {
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    keyword?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => api.get('/admin/notices', { params }),
+
+  getOne: (id: string) => api.get(`/admin/notices/${id}`),
+
+  create: (data: { title: string; content: string; thumbnailUrl?: string }) =>
+    api.post('/admin/notices', data),
+
+  update: (id: string, data: { title?: string; content?: string; thumbnailUrl?: string }) =>
+    api.patch(`/admin/notices/${id}`, data),
+
+  delete: (id: string) => api.delete(`/admin/notices/${id}`),
+
+  getDeleted: (params?: { page?: number; limit?: number }) =>
+    api.get('/admin/notices/deleted/list', { params }),
+
+  restore: (id: string) => api.post(`/admin/notices/${id}/restore`),
+
+  permanentDelete: (id: string) => api.delete(`/admin/notices/${id}/permanent`),
+
+  bulkDelete: (ids: string[]) => api.post('/admin/notices/bulk-delete', { ids }),
+
+  bulkRestore: (ids: string[]) => api.post('/admin/notices/bulk-restore', { ids }),
+
+  bulkPermanentDelete: (ids: string[]) =>
+    api.post('/admin/notices/bulk-permanent-delete', { ids }),
+};
+
 // Image upload API
 export const imageAPI = {
   upload: (file: File, folder: string = 'passers') => {

@@ -1,40 +1,42 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { adminPasserAPI, imageAPI } from '../utils/api';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+import { adminNoticeAPI, imageAPI } from '../utils/api';
 
-const PasserWritePage: React.FC = () => {
+const NoticeWritePage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
 
   const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
-  const imagesInputRef = useRef<HTMLInputElement>(null);
+  const quillRef = useRef<ReactQuill>(null);
 
   useEffect(() => {
     if (isEdit && id) {
-      const loadPasser = async () => {
+      const loadNotice = async () => {
         try {
           setLoading(true);
-          const response = await adminPasserAPI.getOne(id);
+          const response = await adminNoticeAPI.getOne(id);
           const data = response.data.data;
           setTitle(data.title);
-          setThumbnailUrl(data.thumbnailUrl);
-          setImageUrls(data.imageUrls || []);
+          setContent(data.content);
+          setThumbnailUrl(data.thumbnailUrl || '');
         } catch (error) {
           alert('게시글을 불러올 수 없습니다.');
-          navigate('/passers');
+          navigate('/notices');
         } finally {
           setLoading(false);
         }
       };
-      loadPasser();
+      loadNotice();
     }
   }, [id, isEdit, navigate]);
 
@@ -44,7 +46,7 @@ const PasserWritePage: React.FC = () => {
 
     try {
       setUploading(true);
-      const response = await imageAPI.upload(file, 'passers/thumbnails');
+      const response = await imageAPI.upload(file, 'notices/thumbnails');
       setThumbnailUrl(response.data.data.url);
     } catch (error) {
       alert('썸네일 업로드에 실패했습니다.');
@@ -53,59 +55,92 @@ const PasserWritePage: React.FC = () => {
     }
   };
 
-  const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    try {
-      setUploading(true);
-      const fileArray = Array.from(files);
-      const response = await imageAPI.uploadMultiple(fileArray, 'passers/images');
-      const uploadedUrls = response.data.data.map((item: { url: string }) => item.url);
-      setImageUrls((prev) => [...prev, ...uploadedUrls]);
-    } catch (error) {
-      alert('이미지 업로드에 실패했습니다.');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setImageUrls((prev) => prev.filter((_, i) => i !== index));
-  };
-
   const handleRemoveThumbnail = () => {
     setThumbnailUrl('');
   };
+
+  // 에디터 내 이미지 업로드 핸들러
+  const imageHandler = () => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (file) {
+        try {
+          const response = await imageAPI.upload(file, 'notices/content');
+          const imageUrl = response.data.data.url;
+
+          const quill = quillRef.current?.getEditor();
+          if (quill) {
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, 'image', imageUrl);
+            quill.setSelection(range.index + 1, 0);
+          }
+        } catch (error) {
+          alert('이미지 업로드에 실패했습니다.');
+        }
+      }
+    };
+  };
+
+  // Quill 에디터 모듈 설정
+  const modules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ header: [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ color: [] }, { background: [] }],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        [{ align: [] }],
+        ['link', 'image'],
+        ['clean'],
+      ],
+      handlers: {
+        image: imageHandler,
+      },
+    },
+  }), []);
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'color', 'background',
+    'list',
+    'align',
+    'link', 'image',
+  ];
 
   const handleSubmit = async () => {
     if (!title.trim()) {
       alert('제목을 입력해주세요.');
       return;
     }
-    if (!thumbnailUrl) {
-      alert('썸네일 이미지를 업로드해주세요.');
+    if (!content.trim() || content === '<p><br></p>') {
+      alert('내용을 입력해주세요.');
       return;
     }
 
     try {
       setLoading(true);
       if (isEdit) {
-        await adminPasserAPI.update(id!, {
+        await adminNoticeAPI.update(id!, {
           title: title.trim(),
+          content,
           thumbnailUrl,
-          imageUrls,
         });
         alert('게시글이 수정되었습니다.');
       } else {
-        await adminPasserAPI.create({
+        await adminNoticeAPI.create({
           title: title.trim(),
+          content,
           thumbnailUrl,
-          imageUrls,
         });
         alert('게시글이 등록되었습니다.');
       }
-      navigate('/passers');
+      navigate('/notices');
     } catch (error) {
       alert(isEdit ? '수정에 실패했습니다.' : '등록에 실패했습니다.');
     } finally {
@@ -115,14 +150,14 @@ const PasserWritePage: React.FC = () => {
 
   const handleCancel = () => {
     if (window.confirm('작성을 취소하시겠습니까? 입력한 내용은 저장되지 않습니다.')) {
-      navigate('/passers');
+      navigate('/notices');
     }
   };
 
   if (loading && isEdit) {
     return (
       <Container>
-        <PageTitle>{isEdit ? '합격자 수정' : '합격자 등록'}</PageTitle>
+        <PageTitle>{isEdit ? '공지사항 수정' : '공지사항 등록'}</PageTitle>
         <LoadingText>로딩 중...</LoadingText>
       </Container>
     );
@@ -130,7 +165,7 @@ const PasserWritePage: React.FC = () => {
 
   return (
     <Container>
-      <PageTitle>{isEdit ? '합격자 수정' : '합격자 등록'}</PageTitle>
+      <PageTitle>{isEdit ? '공지사항 수정' : '공지사항 등록'}</PageTitle>
 
       <FormBox>
         <FormRow>
@@ -144,7 +179,7 @@ const PasserWritePage: React.FC = () => {
         </FormRow>
 
         <FormRow>
-          <FormLabel>썸네일 이미지 *</FormLabel>
+          <FormLabel>썸네일 이미지 (선택)</FormLabel>
           <UploadSection>
             <input
               type="file"
@@ -173,37 +208,18 @@ const PasserWritePage: React.FC = () => {
         </FormRow>
 
         <FormRow>
-          <FormLabel>상세 이미지</FormLabel>
-          <UploadSection>
-            <input
-              type="file"
-              ref={imagesInputRef}
-              onChange={handleImagesUpload}
-              accept="image/*"
-              multiple
-              style={{ display: 'none' }}
+          <FormLabel>내용 *</FormLabel>
+          <EditorWrapper>
+            <ReactQuill
+              ref={quillRef}
+              theme="snow"
+              value={content}
+              onChange={setContent}
+              modules={modules}
+              formats={formats}
+              placeholder="내용을 입력해주세요"
             />
-            <UploadButton
-              type="button"
-              onClick={() => imagesInputRef.current?.click()}
-              disabled={uploading}
-            >
-              {uploading ? '업로드 중...' : '파일 선택'}
-            </UploadButton>
-            <UploadHint>여러 파일을 선택할 수 있습니다</UploadHint>
-          </UploadSection>
-          {imageUrls.length > 0 && (
-            <ImagePreviews>
-              {imageUrls.map((url, index) => (
-                <ImagePreviewItem key={index}>
-                  <PreviewImage src={url} alt={`이미지 ${index + 1}`} />
-                  <RemoveButton type="button" onClick={() => handleRemoveImage(index)}>
-                    삭제
-                  </RemoveButton>
-                </ImagePreviewItem>
-              ))}
-            </ImagePreviews>
-          )}
+          </EditorWrapper>
         </FormRow>
       </FormBox>
 
@@ -307,20 +323,6 @@ const ThumbnailPreview = styled.div`
   margin-top: 16px;
 `;
 
-const ImagePreviews = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 16px;
-`;
-
-const ImagePreviewItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-`;
-
 const PreviewImage = styled.img`
   max-width: 200px;
   max-height: 200px;
@@ -338,6 +340,33 @@ const RemoveButton = styled.button`
 
   &:hover {
     background: #fa5252;
+  }
+`;
+
+const EditorWrapper = styled.div`
+  .ql-container {
+    min-height: 300px;
+    font-size: 14px;
+  }
+
+  .ql-editor {
+    min-height: 300px;
+  }
+
+  .ql-toolbar {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    background: #f8f9fa;
+  }
+
+  .ql-container {
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+
+  .ql-editor img {
+    max-width: 100%;
+    height: auto;
   }
 `;
 
@@ -379,4 +408,4 @@ const SubmitButton = styled.button`
   }
 `;
 
-export default PasserWritePage;
+export default NoticeWritePage;
