@@ -35,6 +35,10 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout, adminName }) => {
           <NavItem to="/notices" end>
             공지사항 관리
           </NavItem>
+          <NavDivider />
+          <NavItem to="/content" end>
+            컨텐츠 관리
+          </NavItem>
         </Nav>
         <SidebarFooter>
           <AdminInfo>{adminName || '관리자'}님</AdminInfo>

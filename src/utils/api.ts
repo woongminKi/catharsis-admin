@@ -158,6 +158,50 @@ export const adminNoticeAPI = {
     api.post('/admin/notices/bulk-permanent-delete', { ids }),
 };
 
+// Admin Content APIs
+export const adminContentAPI = {
+  getAll: () => api.get('/admin/content'),
+
+  updateHero: (data: {
+    imageUrl?: string;
+    subtitle?: string;
+    title?: string;
+    buttonText?: string;
+    buttonLink?: string;
+  }) => api.patch('/admin/content/hero', data),
+
+  updateSchoolPassers: (schoolPassers: Array<{
+    thumbnailUrl: string;
+    school: string;
+    count: number;
+    link: string;
+    order?: number;
+  }>) => api.put('/admin/content/school-passers', { schoolPassers }),
+
+  updateYoutubeVideos: (youtubeVideos: Array<{
+    thumbnailUrl: string;
+    title: string;
+    description: string;
+    link: string;
+    order?: number;
+  }>) => api.put('/admin/content/youtube-videos', { youtubeVideos }),
+
+  updateInstructors: (instructors: Array<{
+    imageUrl: string;
+    name: string;
+    description: string;
+    link: string;
+    order?: number;
+  }>) => api.put('/admin/content/instructors', { instructors }),
+
+  updateInstagramPosts: (instagramPosts: Array<{
+    imageUrl: string;
+    title: string;
+    link: string;
+    order?: number;
+  }>) => api.put('/admin/content/instagram-posts', { instagramPosts }),
+};
+
 // Image upload API
 export const imageAPI = {
   upload: (file: File, folder: string = 'passers') => {
