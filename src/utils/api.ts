@@ -159,6 +159,41 @@ export const adminNoticeAPI = {
     api.post('/admin/notices/bulk-permanent-delete', { ids }),
 };
 
+// Admin Resource APIs
+export const adminResourceAPI = {
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    keyword?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => api.get('/admin/resources', { params }),
+
+  getOne: (id: string) => api.get(`/admin/resources/${id}`),
+
+  create: (data: { title: string; content: string; thumbnailUrl?: string }) =>
+    api.post('/admin/resources', data),
+
+  update: (id: string, data: { title?: string; content?: string; thumbnailUrl?: string }) =>
+    api.patch(`/admin/resources/${id}`, data),
+
+  delete: (id: string) => api.delete(`/admin/resources/${id}`),
+
+  getDeleted: (params?: { page?: number; limit?: number }) =>
+    api.get('/admin/resources/deleted/list', { params }),
+
+  restore: (id: string) => api.post(`/admin/resources/${id}/restore`),
+
+  permanentDelete: (id: string) => api.delete(`/admin/resources/${id}/permanent`),
+
+  bulkDelete: (ids: string[]) => api.post('/admin/resources/bulk-delete', { ids }),
+
+  bulkRestore: (ids: string[]) => api.post('/admin/resources/bulk-restore', { ids }),
+
+  bulkPermanentDelete: (ids: string[]) =>
+    api.post('/admin/resources/bulk-permanent-delete', { ids }),
+};
+
 // Admin Content APIs
 export const adminContentAPI = {
   getAll: () => api.get('/admin/content'),

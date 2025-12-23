@@ -10,6 +10,8 @@ import PassersPage from './pages/PassersPage';
 import PasserWritePage from './pages/PasserWritePage';
 import NoticesPage from './pages/NoticesPage';
 import NoticeWritePage from './pages/NoticeWritePage';
+import ResourcesPage from './pages/ResourcesPage';
+import ResourceWritePage from './pages/ResourceWritePage';
 import ContentManagePage from './pages/ContentManagePage';
 
 const App: React.FC = () => {
@@ -137,6 +139,42 @@ const App: React.FC = () => {
               isAuthenticated ? (
                 <Layout onLogout={logout} adminName={admin?.name}>
                   <NoticeWritePage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/resources"
+            element={
+              isAuthenticated ? (
+                <Layout onLogout={logout} adminName={admin?.name}>
+                  <ResourcesPage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/resources/write"
+            element={
+              isAuthenticated ? (
+                <Layout onLogout={logout} adminName={admin?.name}>
+                  <ResourceWritePage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/resources/write/:id"
+            element={
+              isAuthenticated ? (
+                <Layout onLogout={logout} adminName={admin?.name}>
+                  <ResourceWritePage />
                 </Layout>
               ) : (
                 <Navigate to="/login" replace />
