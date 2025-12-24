@@ -194,6 +194,41 @@ export const adminResourceAPI = {
     api.post('/admin/resources/bulk-permanent-delete', { ids }),
 };
 
+// Admin Gallery APIs
+export const adminGalleryAPI = {
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    keyword?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => api.get('/admin/galleries', { params }),
+
+  getOne: (id: string) => api.get(`/admin/galleries/${id}`),
+
+  create: (data: { title: string; imageUrl: string }) =>
+    api.post('/admin/galleries', data),
+
+  update: (id: string, data: { title?: string; imageUrl?: string }) =>
+    api.patch(`/admin/galleries/${id}`, data),
+
+  delete: (id: string) => api.delete(`/admin/galleries/${id}`),
+
+  getDeleted: (params?: { page?: number; limit?: number }) =>
+    api.get('/admin/galleries/deleted/list', { params }),
+
+  restore: (id: string) => api.post(`/admin/galleries/${id}/restore`),
+
+  permanentDelete: (id: string) => api.delete(`/admin/galleries/${id}/permanent`),
+
+  bulkDelete: (ids: string[]) => api.post('/admin/galleries/bulk-delete', { ids }),
+
+  bulkRestore: (ids: string[]) => api.post('/admin/galleries/bulk-restore', { ids }),
+
+  bulkPermanentDelete: (ids: string[]) =>
+    api.post('/admin/galleries/bulk-permanent-delete', { ids }),
+};
+
 // Admin Content APIs
 export const adminContentAPI = {
   getAll: () => api.get('/admin/content'),

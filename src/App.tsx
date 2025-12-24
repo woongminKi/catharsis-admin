@@ -13,6 +13,8 @@ import NoticeWritePage from './pages/NoticeWritePage';
 import ResourcesPage from './pages/ResourcesPage';
 import ResourceWritePage from './pages/ResourceWritePage';
 import ContentManagePage from './pages/ContentManagePage';
+import GalleryPage from './pages/GalleryPage';
+import GalleryWritePage from './pages/GalleryWritePage';
 
 const App: React.FC = () => {
   const { isAuthenticated, loading, login, logout, admin } = useAuth();
@@ -175,6 +177,42 @@ const App: React.FC = () => {
               isAuthenticated ? (
                 <Layout onLogout={logout} adminName={admin?.name}>
                   <ResourceWritePage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/galleries"
+            element={
+              isAuthenticated ? (
+                <Layout onLogout={logout} adminName={admin?.name}>
+                  <GalleryPage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/galleries/write"
+            element={
+              isAuthenticated ? (
+                <Layout onLogout={logout} adminName={admin?.name}>
+                  <GalleryWritePage />
+                </Layout>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/galleries/write/:id"
+            element={
+              isAuthenticated ? (
+                <Layout onLogout={logout} adminName={admin?.name}>
+                  <GalleryWritePage />
                 </Layout>
               ) : (
                 <Navigate to="/login" replace />

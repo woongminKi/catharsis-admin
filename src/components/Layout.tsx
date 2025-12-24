@@ -38,6 +38,9 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout, adminName }) => {
           <NavItem to="/resources" end>
             입시자료실 관리
           </NavItem>
+          <NavItem to="/galleries" end>
+            포토갤러리 관리
+          </NavItem>
           <NavDivider />
           <NavItem to="/content" end>
             컨텐츠 관리
