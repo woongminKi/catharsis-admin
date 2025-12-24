@@ -5,7 +5,7 @@ import { adminContentAPI, imageAPI } from '../utils/api';
 type TabType = 'hero' | 'schoolPassers' | 'youtube' | 'instructors' | 'instagram';
 
 interface HeroSection {
-  imageUrl: string;
+  imageUrls: string[];
   subtitle: string;
   title: string;
   buttonText: string;
@@ -54,7 +54,7 @@ const ContentManagePage: React.FC = () => {
 
   // 히어로 섹션
   const [heroSection, setHeroSection] = useState<HeroSection>({
-    imageUrl: '',
+    imageUrls: [],
     subtitle: '',
     title: '',
     buttonText: '',
@@ -86,7 +86,7 @@ const ContentManagePage: React.FC = () => {
       const data = response.data.data;
 
       setHeroSection(data.heroSection || {
-        imageUrl: '',
+        imageUrls: [],
         subtitle: 'MAKE YOUR STYLE',
         title: '입시를 스타일하다, 민액터스',
         buttonText: '2024 합격자 전체보기',
@@ -117,17 +117,43 @@ const ContentManagePage: React.FC = () => {
     }
   };
 
-  // 히어로 이미지 업로드
+  // 히어로 이미지 업로드 (여러 이미지 추가)
   const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       const response = await imageAPI.upload(file, 'content/hero');
-      setHeroSection({ ...heroSection, imageUrl: response.data.data.url });
+      const newImageUrl = response.data.data.url;
+      setHeroSection({
+        ...heroSection,
+        imageUrls: [...heroSection.imageUrls, newImageUrl],
+      });
     } catch (error) {
       alert('이미지 업로드에 실패했습니다.');
     }
+    // 파일 입력 초기화 (같은 파일 다시 선택 가능)
+    if (heroImageRef.current) {
+      heroImageRef.current.value = '';
+    }
+  };
+
+  // 히어로 이미지 삭제
+  const handleRemoveHeroImage = (index: number) => {
+    setHeroSection({
+      ...heroSection,
+      imageUrls: heroSection.imageUrls.filter((_, i) => i !== index),
+    });
+  };
+
+  // 히어로 이미지 순서 변경
+  const handleMoveHeroImage = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= heroSection.imageUrls.length) return;
+
+    const newImageUrls = [...heroSection.imageUrls];
+    [newImageUrls[index], newImageUrls[newIndex]] = [newImageUrls[newIndex], newImageUrls[index]];
+    setHeroSection({ ...heroSection, imageUrls: newImageUrls });
   };
 
   // 학교별 합격자 저장
@@ -319,7 +345,7 @@ const ContentManagePage: React.FC = () => {
           <>
             <SectionTitle>메인 홈 이미지 설정</SectionTitle>
             <FormRow>
-              <FormLabel>배경 이미지</FormLabel>
+              <FormLabel>배경 이미지 (여러 장 등록 시 캐러셀로 표시됩니다)</FormLabel>
               <input
                 type="file"
                 ref={heroImageRef}
@@ -328,15 +354,39 @@ const ContentManagePage: React.FC = () => {
                 style={{ display: 'none' }}
               />
               <UploadButton onClick={() => heroImageRef.current?.click()}>
-                이미지 선택
+                + 이미지 추가
               </UploadButton>
-              {heroSection.imageUrl && (
-                <ImagePreview>
-                  <img src={heroSection.imageUrl} alt="히어로 이미지" />
-                  <RemoveButton onClick={() => setHeroSection({ ...heroSection, imageUrl: '' })}>
-                    삭제
-                  </RemoveButton>
-                </ImagePreview>
+              <ImageCountText>
+                {heroSection.imageUrls.length}개의 이미지가 등록되어 있습니다.
+              </ImageCountText>
+              {heroSection.imageUrls.length > 0 && (
+                <HeroImageGrid>
+                  {heroSection.imageUrls.map((url, index) => (
+                    <HeroImageItem key={index}>
+                      <HeroImageNumber>{index + 1}</HeroImageNumber>
+                      <img src={url} alt={`히어로 이미지 ${index + 1}`} />
+                      <HeroImageActions>
+                        <ImageOrderButton
+                          onClick={() => handleMoveHeroImage(index, 'up')}
+                          disabled={index === 0}
+                          title="위로 이동"
+                        >
+                          &#9650;
+                        </ImageOrderButton>
+                        <ImageOrderButton
+                          onClick={() => handleMoveHeroImage(index, 'down')}
+                          disabled={index === heroSection.imageUrls.length - 1}
+                          title="아래로 이동"
+                        >
+                          &#9660;
+                        </ImageOrderButton>
+                        <ImageRemoveButton onClick={() => handleRemoveHeroImage(index)}>
+                          삭제
+                        </ImageRemoveButton>
+                      </HeroImageActions>
+                    </HeroImageItem>
+                  ))}
+                </HeroImageGrid>
               )}
             </FormRow>
             <FormRow>
@@ -796,6 +846,90 @@ const SmallImagePreview = styled.img`
   border: 1px solid #ddd;
   margin-top: 8px;
   display: block;
+`;
+
+const ImageCountText = styled.p`
+  font-size: 13px;
+  color: #666;
+  margin: 8px 0 16px 0;
+`;
+
+const HeroImageGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+`;
+
+const HeroImageItem = styled.div`
+  position: relative;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f9f9f9;
+
+  img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+  }
+`;
+
+const HeroImageNumber = styled.div`
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+`;
+
+const HeroImageActions = styled.div`
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  background: #f9f9f9;
+  justify-content: center;
+`;
+
+const ImageOrderButton = styled.button`
+  padding: 6px 10px;
+  background: #e9ecef;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  color: #333;
+
+  &:hover:not(:disabled) {
+    background: #dee2e6;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+`;
+
+const ImageRemoveButton = styled.button`
+  padding: 6px 12px;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+
+  &:hover {
+    background: #fa5252;
+  }
 `;
 
 const RemoveButton = styled.button`

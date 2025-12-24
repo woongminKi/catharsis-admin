@@ -234,7 +234,7 @@ export const adminContentAPI = {
   getAll: () => api.get('/admin/content'),
 
   updateHero: (data: {
-    imageUrl?: string;
+    imageUrls?: string[];
     subtitle?: string;
     title?: string;
     buttonText?: string;
