@@ -271,6 +271,12 @@ export const adminContentAPI = {
     link: string;
     order?: number;
   }>) => api.put('/admin/content/instagram-posts', { instagramPosts }),
+
+  updateHistoryPassers: (historyPassers: Array<{
+    leftText: string;
+    rightText: string;
+    order?: number;
+  }>) => api.put('/admin/content/history-passers', { historyPassers }),
 };
 
 // Image upload API

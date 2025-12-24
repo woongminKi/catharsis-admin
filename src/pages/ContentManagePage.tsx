@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { adminContentAPI, imageAPI } from '../utils/api';
 
-type TabType = 'hero' | 'schoolPassers' | 'youtube' | 'instructors' | 'instagram';
+type TabType = 'hero' | 'schoolPassers' | 'youtube' | 'instructors' | 'instagram' | 'historyPassers';
 
 interface HeroSection {
   imageUrls: string[];
@@ -47,6 +47,13 @@ interface InstagramPost {
   order: number;
 }
 
+interface HistoryPasser {
+  _id?: string;
+  leftText: string;
+  rightText: string;
+  order: number;
+}
+
 const ContentManagePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('hero');
   const [loading, setLoading] = useState(true);
@@ -73,6 +80,9 @@ const ContentManagePage: React.FC = () => {
   // 인스타그램
   const [instagramPosts, setInstagramPosts] = useState<InstagramPost[]>([]);
 
+  // 역대 합격자
+  const [historyPassers, setHistoryPassers] = useState<HistoryPasser[]>([]);
+
   const heroImageRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -96,6 +106,7 @@ const ContentManagePage: React.FC = () => {
       setYoutubeVideos(data.youtubeVideos || []);
       setInstructors(data.instructors || []);
       setInstagramPosts(data.instagramPosts || []);
+      setHistoryPassers(data.historyPassers || []);
     } catch (error) {
       console.error('Error fetching content:', error);
       alert('콘텐츠를 불러오는데 실패했습니다.');
@@ -308,6 +319,32 @@ const ContentManagePage: React.FC = () => {
     }
   };
 
+  // 역대 합격자 저장
+  const handleSaveHistoryPassers = async () => {
+    try {
+      setSaving(true);
+      await adminContentAPI.updateHistoryPassers(historyPassers);
+      alert('저장되었습니다.');
+    } catch (error) {
+      alert('저장에 실패했습니다.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // 역대 합격자 추가 (새 항목이 맨 위에 추가)
+  const handleAddHistoryPasser = () => {
+    setHistoryPassers([
+      { leftText: '', rightText: '', order: 0 },
+      ...historyPassers,
+    ]);
+  };
+
+  // 역대 합격자 삭제
+  const handleRemoveHistoryPasser = (index: number) => {
+    setHistoryPassers(historyPassers.filter((_, i) => i !== index));
+  };
+
   if (loading) {
     return (
       <Container>
@@ -336,6 +373,9 @@ const ContentManagePage: React.FC = () => {
         </Tab>
         <Tab $active={activeTab === 'instagram'} onClick={() => setActiveTab('instagram')}>
           학원 인스타 썸네일
+        </Tab>
+        <Tab $active={activeTab === 'historyPassers'} onClick={() => setActiveTab('historyPassers')}>
+          역대 합격자
         </Tab>
       </TabContainer>
 
@@ -714,6 +754,53 @@ const ContentManagePage: React.FC = () => {
             ))}
             <SaveButtonContainer>
               <SaveButton onClick={handleSaveInstagram} disabled={saving}>
+                {saving ? '저장 중...' : '저장'}
+              </SaveButton>
+            </SaveButtonContainer>
+          </>
+        )}
+
+        {/* 역대 합격자 탭 */}
+        {activeTab === 'historyPassers' && (
+          <>
+            <SectionHeader>
+              <SectionTitle>역대 합격자 설정</SectionTitle>
+              <AddButton onClick={handleAddHistoryPasser}>+ 합격자 추가</AddButton>
+            </SectionHeader>
+            {historyPassers.map((passer, index) => (
+              <ItemCard key={index}>
+                <ItemHeader>
+                  <ItemTitle>합격자 {index + 1}</ItemTitle>
+                  <DeleteButton onClick={() => handleRemoveHistoryPasser(index)}>삭제</DeleteButton>
+                </ItemHeader>
+                <FormRow>
+                  <FormLabel>좌측 텍스트 (학교 연도)</FormLabel>
+                  <Input
+                    value={passer.leftText}
+                    onChange={(e) => {
+                      const updated = [...historyPassers];
+                      updated[index].leftText = e.target.value;
+                      setHistoryPassers(updated);
+                    }}
+                    placeholder="예: 한국예술종합학교 25학년도"
+                  />
+                </FormRow>
+                <FormRow>
+                  <FormLabel>우측 텍스트 (이름)</FormLabel>
+                  <Input
+                    value={passer.rightText}
+                    onChange={(e) => {
+                      const updated = [...historyPassers];
+                      updated[index].rightText = e.target.value;
+                      setHistoryPassers(updated);
+                    }}
+                    placeholder="예: 이찬민"
+                  />
+                </FormRow>
+              </ItemCard>
+            ))}
+            <SaveButtonContainer>
+              <SaveButton onClick={handleSaveHistoryPassers} disabled={saving}>
                 {saving ? '저장 중...' : '저장'}
               </SaveButton>
             </SaveButtonContainer>
