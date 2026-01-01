@@ -95,12 +95,17 @@ const ContentManagePage: React.FC = () => {
       const response = await adminContentAPI.getAll();
       const data = response.data.data;
 
-      setHeroSection(data.heroSection || {
+      const defaultHeroSection: HeroSection = {
         imageUrls: [],
         subtitle: 'MAKE YOUR STYLE',
         title: '입시를 스타일하다, 민액터스',
         buttonText: '2024 합격자 전체보기',
         buttonLink: '/passers',
+      };
+      setHeroSection({
+        ...defaultHeroSection,
+        ...(data.heroSection || {}),
+        imageUrls: data.heroSection?.imageUrls || [],
       });
       setSchoolPassers(data.schoolPassers || []);
       setYoutubeVideos(data.youtubeVideos || []);
