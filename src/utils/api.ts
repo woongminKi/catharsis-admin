@@ -31,11 +31,28 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // 네트워크 에러 또는 요청 자체가 실패한 경우
+    if (!error.response) {
+      console.error('네트워크 에러:', error.message);
+      return Promise.reject(new Error('네트워크 연결을 확인해주세요.'));
+    }
+
     if (error.response?.status === 401) {
+      console.error('인증 에러: 토큰이 만료되었거나 유효하지 않습니다.');
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminUser');
-      window.location.href = '/login';
+      // 즉시 리다이렉트하지 않고 에러를 반환하여 호출자가 처리할 수 있게 함
+      const authError = new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+      (authError as any).isAuthError = true;
+      return Promise.reject(authError);
     }
+
+    // 서버 에러 메시지가 있으면 사용
+    const serverMessage = error.response?.data?.message;
+    if (serverMessage) {
+      return Promise.reject(new Error(serverMessage));
+    }
+
     return Promise.reject(error);
   }
 );

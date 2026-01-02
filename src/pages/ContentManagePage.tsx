@@ -124,10 +124,19 @@ const ContentManagePage: React.FC = () => {
   const handleSaveHero = async () => {
     try {
       setSaving(true);
-      await adminContentAPI.updateHero(heroSection);
+      console.log('저장 시도:', heroSection);
+      const response = await adminContentAPI.updateHero(heroSection);
+      console.log('저장 성공:', response.data);
       alert('저장되었습니다.');
-    } catch (error) {
-      alert('저장에 실패했습니다.');
+    } catch (error: any) {
+      console.error('저장 실패:', error);
+      // 인증 에러인 경우 로그인 페이지로 리다이렉트
+      if (error.isAuthError) {
+        alert(error.message);
+        window.location.href = '/login';
+        return;
+      }
+      alert(`저장에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
     } finally {
       setSaving(false);
     }
@@ -139,14 +148,17 @@ const ContentManagePage: React.FC = () => {
     if (!file) return;
 
     try {
+      console.log('이미지 업로드 시도:', file.name);
       const response = await imageAPI.upload(file, 'content/hero');
+      console.log('이미지 업로드 성공:', response.data);
       const newImageUrl = response.data.data.url;
       setHeroSection({
         ...heroSection,
         imageUrls: [...heroSection.imageUrls, newImageUrl],
       });
-    } catch (error) {
-      alert('이미지 업로드에 실패했습니다.');
+    } catch (error: any) {
+      console.error('이미지 업로드 실패:', error);
+      alert(`이미지 업로드에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
     }
     // 파일 입력 초기화 (같은 파일 다시 선택 가능)
     if (heroImageRef.current) {
@@ -178,8 +190,14 @@ const ContentManagePage: React.FC = () => {
       setSaving(true);
       await adminContentAPI.updateSchoolPassers(schoolPassers);
       alert('저장되었습니다.');
-    } catch (error) {
-      alert('저장에 실패했습니다.');
+    } catch (error: any) {
+      console.error('저장 실패:', error);
+      if (error.isAuthError) {
+        alert(error.message);
+        window.location.href = '/login';
+        return;
+      }
+      alert(`저장에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
     } finally {
       setSaving(false);
     }
@@ -216,8 +234,14 @@ const ContentManagePage: React.FC = () => {
       setSaving(true);
       await adminContentAPI.updateYoutubeVideos(youtubeVideos);
       alert('저장되었습니다.');
-    } catch (error) {
-      alert('저장에 실패했습니다.');
+    } catch (error: any) {
+      console.error('저장 실패:', error);
+      if (error.isAuthError) {
+        alert(error.message);
+        window.location.href = '/login';
+        return;
+      }
+      alert(`저장에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
     } finally {
       setSaving(false);
     }
@@ -254,8 +278,14 @@ const ContentManagePage: React.FC = () => {
       setSaving(true);
       await adminContentAPI.updateInstructors(instructors);
       alert('저장되었습니다.');
-    } catch (error) {
-      alert('저장에 실패했습니다.');
+    } catch (error: any) {
+      console.error('저장 실패:', error);
+      if (error.isAuthError) {
+        alert(error.message);
+        window.location.href = '/login';
+        return;
+      }
+      alert(`저장에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
     } finally {
       setSaving(false);
     }
@@ -292,8 +322,14 @@ const ContentManagePage: React.FC = () => {
       setSaving(true);
       await adminContentAPI.updateInstagramPosts(instagramPosts);
       alert('저장되었습니다.');
-    } catch (error) {
-      alert('저장에 실패했습니다.');
+    } catch (error: any) {
+      console.error('저장 실패:', error);
+      if (error.isAuthError) {
+        alert(error.message);
+        window.location.href = '/login';
+        return;
+      }
+      alert(`저장에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
     } finally {
       setSaving(false);
     }
@@ -330,8 +366,14 @@ const ContentManagePage: React.FC = () => {
       setSaving(true);
       await adminContentAPI.updateHistoryPassers(historyPassers);
       alert('저장되었습니다.');
-    } catch (error) {
-      alert('저장에 실패했습니다.');
+    } catch (error: any) {
+      console.error('저장 실패:', error);
+      if (error.isAuthError) {
+        alert(error.message);
+        window.location.href = '/login';
+        return;
+      }
+      alert(`저장에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
     } finally {
       setSaving(false);
     }
