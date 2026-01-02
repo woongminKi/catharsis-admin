@@ -242,7 +242,7 @@ export const adminContentAPI = {
     title?: string;
     buttonText?: string;
     buttonLink?: string;
-  }) => api.put('/admin/content/hero', data),
+  }) => api.patch('/admin/content/hero', data),
 
   updateSchoolPassers: (schoolPassers: Array<{
     thumbnailUrl: string;
