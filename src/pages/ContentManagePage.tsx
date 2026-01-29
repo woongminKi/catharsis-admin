@@ -1,6 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { adminContentAPI, imageAPI } from '../utils/api';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 type TabType = 'hero' | 'schoolPassers' | 'youtube' | 'instructors' | 'instagram' | 'historyPassers';
 
@@ -54,6 +71,90 @@ interface HistoryPasser {
   order: number;
 }
 
+// 드래그 가능한 강사 카드 컴포넌트
+interface SortableInstructorCardProps {
+  instructor: Instructor;
+  index: number;
+  onRemove: (index: number) => void;
+  onImageUpload: (index: number, file: File) => void;
+  onUpdate: (index: number, field: keyof Instructor, value: string) => void;
+}
+
+const SortableInstructorCard: React.FC<SortableInstructorCardProps> = ({
+  instructor,
+  index,
+  onRemove,
+  onImageUpload,
+  onUpdate,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: instructor._id || `instructor-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <DraggableItemCard ref={setNodeRef} style={style}>
+      <ItemHeader>
+        <DragHandle {...attributes} {...listeners}>
+          <DragIcon>&#9776;</DragIcon>
+          <ItemTitle>강사 {index + 1}</ItemTitle>
+        </DragHandle>
+        <DeleteButton onClick={() => onRemove(index)}>삭제</DeleteButton>
+      </ItemHeader>
+      <FormRow>
+        <FormLabel>강사 이미지</FormLabel>
+        <input
+          type="file"
+          onChange={(e) => e.target.files?.[0] && onImageUpload(index, e.target.files[0])}
+          accept="image/*"
+          style={{ display: 'none' }}
+          id={`instructor-img-${index}`}
+        />
+        <UploadButton onClick={() => document.getElementById(`instructor-img-${index}`)?.click()}>
+          이미지 선택
+        </UploadButton>
+        {instructor.imageUrl && (
+          <SmallImagePreview src={instructor.imageUrl} alt="강사 이미지" />
+        )}
+      </FormRow>
+      <FormRow>
+        <FormLabel>강사 이름</FormLabel>
+        <Input
+          value={instructor.name}
+          onChange={(e) => onUpdate(index, 'name', e.target.value)}
+          placeholder="예: 김민수 강사"
+        />
+      </FormRow>
+      <FormRow>
+        <FormLabel>소개 (학교/전공)</FormLabel>
+        <Input
+          value={instructor.description}
+          onChange={(e) => onUpdate(index, 'description', e.target.value)}
+          placeholder="예: 한국예술종합학교 출신"
+        />
+      </FormRow>
+      <FormRow>
+        <FormLabel>클릭 시 이동 링크</FormLabel>
+        <Input
+          value={instructor.link}
+          onChange={(e) => onUpdate(index, 'link', e.target.value)}
+          placeholder="예: /about/instructors"
+        />
+      </FormRow>
+    </DraggableItemCard>
+  );
+};
+
 const ContentManagePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('hero');
   const [loading, setLoading] = useState(true);
@@ -84,6 +185,18 @@ const ContentManagePage: React.FC = () => {
   const [historyPassers, setHistoryPassers] = useState<HistoryPasser[]>([]);
 
   const heroImageRef = useRef<HTMLInputElement>(null);
+
+  // 드래그 앤 드롭 센서 설정
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     fetchContent();
@@ -302,6 +415,33 @@ const ContentManagePage: React.FC = () => {
   // 강사 삭제
   const handleRemoveInstructor = (index: number) => {
     setInstructors(instructors.filter((_, i) => i !== index));
+  };
+
+  // 강사 순서 변경 (드래그 앤 드롭)
+  const handleInstructorDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setInstructors((items) => {
+        const oldIndex = items.findIndex(
+          (item) => (item._id || `instructor-${items.indexOf(item)}`) === active.id
+        );
+        const newIndex = items.findIndex(
+          (item) => (item._id || `instructor-${items.indexOf(item)}`) === over.id
+        );
+
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        // order 값 업데이트
+        return newItems.map((item, idx) => ({ ...item, order: idx }));
+      });
+    }
+  };
+
+  // 강사 필드 업데이트
+  const handleUpdateInstructor = (index: number, field: keyof Instructor, value: string) => {
+    const updated = [...instructors];
+    (updated[index] as any)[field] = value;
+    setInstructors(updated);
   };
 
   // 강사 이미지 업로드
@@ -674,73 +814,35 @@ const ContentManagePage: React.FC = () => {
           <>
             <SectionHeader>
               <SectionTitle>강사진 설정</SectionTitle>
-              <AddButton onClick={handleAddInstructor}>+ 강사 추가</AddButton>
+              <HeaderActions>
+                <AddButton onClick={handleAddInstructor}>+ 강사 추가</AddButton>
+                <SaveButton onClick={handleSaveInstructors} disabled={saving}>
+                  {saving ? '저장 중...' : '저장'}
+                </SaveButton>
+              </HeaderActions>
             </SectionHeader>
-            {instructors.map((instructor, index) => (
-              <ItemCard key={index}>
-                <ItemHeader>
-                  <ItemTitle>강사 {index + 1}</ItemTitle>
-                  <DeleteButton onClick={() => handleRemoveInstructor(index)}>삭제</DeleteButton>
-                </ItemHeader>
-                <FormRow>
-                  <FormLabel>강사 이미지</FormLabel>
-                  <input
-                    type="file"
-                    onChange={(e) => e.target.files?.[0] && handleInstructorImageUpload(index, e.target.files[0])}
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id={`instructor-img-${index}`}
+            <DragHint>카드 왼쪽의 &#9776; 아이콘을 드래그하여 순서를 변경할 수 있습니다.</DragHint>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleInstructorDragEnd}
+            >
+              <SortableContext
+                items={instructors.map((inst, idx) => inst._id || `instructor-${idx}`)}
+                strategy={verticalListSortingStrategy}
+              >
+                {instructors.map((instructor, index) => (
+                  <SortableInstructorCard
+                    key={instructor._id || `instructor-${index}`}
+                    instructor={instructor}
+                    index={index}
+                    onRemove={handleRemoveInstructor}
+                    onImageUpload={handleInstructorImageUpload}
+                    onUpdate={handleUpdateInstructor}
                   />
-                  <UploadButton onClick={() => document.getElementById(`instructor-img-${index}`)?.click()}>
-                    이미지 선택
-                  </UploadButton>
-                  {instructor.imageUrl && (
-                    <SmallImagePreview src={instructor.imageUrl} alt="강사 이미지" />
-                  )}
-                </FormRow>
-                <FormRow>
-                  <FormLabel>강사 이름</FormLabel>
-                  <Input
-                    value={instructor.name}
-                    onChange={(e) => {
-                      const updated = [...instructors];
-                      updated[index].name = e.target.value;
-                      setInstructors(updated);
-                    }}
-                    placeholder="예: 김민수 강사"
-                  />
-                </FormRow>
-                <FormRow>
-                  <FormLabel>소개 (학교/전공)</FormLabel>
-                  <Input
-                    value={instructor.description}
-                    onChange={(e) => {
-                      const updated = [...instructors];
-                      updated[index].description = e.target.value;
-                      setInstructors(updated);
-                    }}
-                    placeholder="예: 한국예술종합학교 출신"
-                  />
-                </FormRow>
-                <FormRow>
-                  <FormLabel>클릭 시 이동 링크</FormLabel>
-                  <Input
-                    value={instructor.link}
-                    onChange={(e) => {
-                      const updated = [...instructors];
-                      updated[index].link = e.target.value;
-                      setInstructors(updated);
-                    }}
-                    placeholder="예: /about/instructors"
-                  />
-                </FormRow>
-              </ItemCard>
-            ))}
-            <SaveButtonContainer>
-              <SaveButton onClick={handleSaveInstructors} disabled={saving}>
-                {saving ? '저장 중...' : '저장'}
-              </SaveButton>
-            </SaveButtonContainer>
+                ))}
+              </SortableContext>
+            </DndContext>
           </>
         )}
 
@@ -911,6 +1013,12 @@ const SectionHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
 `;
 
 const SectionTitle = styled.h3`
@@ -1102,6 +1210,53 @@ const ItemCard = styled.div`
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 16px;
+`;
+
+const DraggableItemCard = styled.div`
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    border-color: #4dabf7;
+  }
+`;
+
+const DragHandle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f0f0f0;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+`;
+
+const DragIcon = styled.span`
+  font-size: 16px;
+  color: #999;
+  user-select: none;
+`;
+
+const DragHint = styled.p`
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #4dabf7;
 `;
 
 const ItemHeader = styled.div`
