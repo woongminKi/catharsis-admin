@@ -299,6 +299,58 @@ export const adminContentAPI = {
   }>) => api.put('/admin/content/history-passers', { historyPassers }),
 };
 
+// Admin Instructor APIs
+export interface DetailSection {
+  title: string;
+  items: string[];
+}
+
+export interface InstructorData {
+  name: string;
+  position: string;
+  education: string;
+  category: 'leader' | 'acting' | 'musical' | 'dance';
+  profileImages?: string[];
+  detailSections?: DetailSection[];
+  order?: number;
+  isActive?: boolean;
+}
+
+export const adminInstructorAPI = {
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    keyword?: string;
+    category?: string;
+  }) => api.get('/admin/instructors', { params }),
+
+  getOne: (id: string) => api.get(`/admin/instructors/${id}`),
+
+  create: (data: InstructorData) =>
+    api.post('/admin/instructors', data),
+
+  update: (id: string, data: Partial<InstructorData>) =>
+    api.patch(`/admin/instructors/${id}`, data),
+
+  delete: (id: string) => api.delete(`/admin/instructors/${id}`),
+
+  getDeleted: (params?: { page?: number; limit?: number }) =>
+    api.get('/admin/instructors/deleted/list', { params }),
+
+  restore: (id: string) => api.post(`/admin/instructors/${id}/restore`),
+
+  permanentDelete: (id: string) => api.delete(`/admin/instructors/${id}/permanent`),
+
+  bulkDelete: (ids: string[]) => api.post('/admin/instructors/bulk-delete', { ids }),
+
+  reorder: (orders: { id: string; order: number }[]) =>
+    api.put('/admin/instructors/reorder', { orders }),
+
+  moveUp: (id: string) => api.put(`/admin/instructors/${id}/move-up`),
+
+  moveDown: (id: string) => api.put(`/admin/instructors/${id}/move-down`),
+};
+
 // Image upload API
 export const imageAPI = {
   upload: (file: File, folder: string = 'passers') => {
