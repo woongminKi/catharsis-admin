@@ -224,6 +224,7 @@ const InstructorWritePage: React.FC = () => {
             value={category}
             onChange={(e) => setCategory(e.target.value as any)}
           >
+            <option value="leader">대표원장</option>
             <option value="acting">연기</option>
             <option value="musical">뮤지컬</option>
             <option value="dance">무용</option>

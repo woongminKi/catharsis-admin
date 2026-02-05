@@ -23,12 +23,14 @@ interface Pagination {
 }
 
 const categoryLabels: Record<string, string> = {
+  leader: '대표원장',
   acting: '연기',
   musical: '뮤지컬',
   dance: '무용',
 };
 
 const categoryTabs = [
+  { key: 'leader', label: '대표원장' },
   { key: 'acting', label: '연기' },
   { key: 'musical', label: '뮤지컬' },
   { key: 'dance', label: '무용' },
@@ -47,7 +49,7 @@ const InstructorsPage: React.FC = () => {
 
   // 검색 필터
   const [keyword, setKeyword] = useState('');
-  const [category, setCategory] = useState('acting'); // 기본값: 연기
+  const [category, setCategory] = useState('leader'); // 기본값: 대표원장
 
   const fetchInstructors = useCallback(async (page = 1) => {
     setLoading(true);
