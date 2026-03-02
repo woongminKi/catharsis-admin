@@ -134,7 +134,7 @@ const PostDetailModal: React.FC<PostDetailModalProps> = ({
                   <CommentsTitle>답변</CommentsTitle>
                   {post.comments.map((comment) => (
                     <CommentItem key={comment._id}>
-                      <CommentContent>{comment.content}</CommentContent>
+                      <CommentContent dangerouslySetInnerHTML={{ __html: comment.content }} />
                     </CommentItem>
                   ))}
                 </CommentsSection>
