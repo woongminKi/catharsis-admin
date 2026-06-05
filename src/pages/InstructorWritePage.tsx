@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { adminInstructorAPI, imageAPI, DetailSection } from '../utils/api';
+import { rewriteImageUrl } from '../utils/imageUrl';
 
 const InstructorWritePage: React.FC = () => {
   const navigate = useNavigate();
@@ -282,7 +283,7 @@ const InstructorWritePage: React.FC = () => {
           <ImageGrid>
             {profileImages.map((url, index) => (
               <ImageItem key={index}>
-                <PreviewImage src={url} alt={`프로필 ${index + 1}`} />
+                <PreviewImage src={rewriteImageUrl(url)} alt={`프로필 ${index + 1}`} />
                 <RemoveImageButton type="button" onClick={() => handleRemoveImage(index)}>
                   삭제
                 </RemoveImageButton>

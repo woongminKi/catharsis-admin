@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { adminGalleryAPI, imageAPI } from '../utils/api';
+import { rewriteImageUrl } from '../utils/imageUrl';
 
 const GalleryWritePage: React.FC = () => {
   const navigate = useNavigate();
@@ -138,7 +139,7 @@ const GalleryWritePage: React.FC = () => {
           </UploadSection>
           {imageUrl && (
             <ImagePreview>
-              <PreviewImage src={imageUrl} alt="갤러리 이미지" />
+              <PreviewImage src={rewriteImageUrl(imageUrl)} alt="갤러리 이미지" />
               <RemoveButton type="button" onClick={handleRemoveImage}>
                 삭제
               </RemoveButton>

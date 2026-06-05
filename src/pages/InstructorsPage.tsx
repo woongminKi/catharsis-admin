@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { adminInstructorAPI } from '../utils/api';
+import { rewriteImageUrl } from '../utils/imageUrl';
 
 interface Instructor {
   _id: string;
@@ -300,7 +301,7 @@ const InstructorsPage: React.FC = () => {
                 </Td>
                 <Td>
                   {instructor.profileImages.length > 0 ? (
-                    <ProfileThumbnail src={instructor.profileImages[0]} alt={instructor.name} />
+                    <ProfileThumbnail src={rewriteImageUrl(instructor.profileImages[0])} alt={instructor.name} />
                   ) : (
                     <NoImage>-</NoImage>
                   )}

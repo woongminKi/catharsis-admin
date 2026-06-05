@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { adminPasserAPI, imageAPI } from '../utils/api';
+import { rewriteImageUrl } from '../utils/imageUrl';
 
 const PasserWritePage: React.FC = () => {
   const navigate = useNavigate();
@@ -164,7 +165,7 @@ const PasserWritePage: React.FC = () => {
           </UploadSection>
           {thumbnailUrl && (
             <ThumbnailPreview>
-              <PreviewImage src={thumbnailUrl} alt="썸네일" />
+              <PreviewImage src={rewriteImageUrl(thumbnailUrl)} alt="썸네일" />
               <RemoveButton type="button" onClick={handleRemoveThumbnail}>
                 삭제
               </RemoveButton>
@@ -196,7 +197,7 @@ const PasserWritePage: React.FC = () => {
             <ImagePreviews>
               {imageUrls.map((url, index) => (
                 <ImagePreviewItem key={index}>
-                  <PreviewImage src={url} alt={`이미지 ${index + 1}`} />
+                  <PreviewImage src={rewriteImageUrl(url)} alt={`이미지 ${index + 1}`} />
                   <RemoveButton type="button" onClick={() => handleRemoveImage(index)}>
                     삭제
                   </RemoveButton>

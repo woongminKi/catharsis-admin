@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { adminContentAPI, imageAPI } from '../utils/api';
+import { rewriteImageUrl } from '../utils/imageUrl';
 import {
   DndContext,
   closestCenter,
@@ -124,7 +125,7 @@ const SortableInstructorCard: React.FC<SortableInstructorCardProps> = ({
           이미지 선택
         </UploadButton>
         {instructor.imageUrl && (
-          <SmallImagePreview src={instructor.imageUrl} alt="강사 이미지" />
+          <SmallImagePreview src={rewriteImageUrl(instructor.imageUrl)} alt="강사 이미지" />
         )}
       </FormRow>
       <FormRow>
@@ -591,7 +592,7 @@ const ContentManagePage: React.FC = () => {
                   {heroSection.imageUrls.map((url, index) => (
                     <HeroImageItem key={index}>
                       <HeroImageNumber>{index + 1}</HeroImageNumber>
-                      <img src={url} alt={`히어로 이미지 ${index + 1}`} />
+                      <img src={rewriteImageUrl(url)} alt={`히어로 이미지 ${index + 1}`} />
                       <HeroImageActions>
                         <ImageOrderButton
                           onClick={() => handleMoveHeroImage(index, 'up')}
@@ -682,7 +683,7 @@ const ContentManagePage: React.FC = () => {
                     이미지 선택
                   </UploadButton>
                   {school.thumbnailUrl && (
-                    <SmallImagePreview src={school.thumbnailUrl} alt="썸네일" />
+                    <SmallImagePreview src={rewriteImageUrl(school.thumbnailUrl)} alt="썸네일" />
                   )}
                 </FormRow>
                 <FormRow>
@@ -760,7 +761,7 @@ const ContentManagePage: React.FC = () => {
                     이미지 선택
                   </UploadButton>
                   {video.thumbnailUrl && (
-                    <SmallImagePreview src={video.thumbnailUrl} alt="썸네일" />
+                    <SmallImagePreview src={rewriteImageUrl(video.thumbnailUrl)} alt="썸네일" />
                   )}
                 </FormRow>
                 <FormRow>
@@ -872,7 +873,7 @@ const ContentManagePage: React.FC = () => {
                     이미지 선택
                   </UploadButton>
                   {post.imageUrl && (
-                    <SmallImagePreview src={post.imageUrl} alt="인스타 이미지" />
+                    <SmallImagePreview src={rewriteImageUrl(post.imageUrl)} alt="인스타 이미지" />
                   )}
                 </FormRow>
                 <FormRow>
