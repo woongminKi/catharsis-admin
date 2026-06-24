@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { adminGalleryAPI } from '../utils/api';
-import { rewriteImageUrl } from '../utils/imageUrl';
 
 interface Gallery {
   _id: string;
@@ -236,7 +235,7 @@ const GalleryPage: React.FC = () => {
                 </Td>
                 <Td>{pagination.totalItems - (pagination.currentPage - 1) * 10 - index}</Td>
                 <Td>
-                  <ThumbnailImage src={rewriteImageUrl(gallery.imageUrl)} alt={gallery.title} />
+                  <ThumbnailImage src={gallery.imageUrl} alt={gallery.title} />
                 </Td>
                 <Td style={{ textAlign: 'left' }}>{gallery.title}</Td>
                 <Td>{gallery.viewCount}</Td>

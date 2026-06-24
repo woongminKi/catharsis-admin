@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { adminConsultationAPI } from '../utils/api';
-import { rewriteImagesInHtml } from '../utils/imageUrl';
 
 interface Comment {
   _id: string;
@@ -128,14 +127,14 @@ const PostDetailModal: React.FC<PostDetailModalProps> = ({
                 </PostMeta>
               </PostHeader>
 
-              <PostBody dangerouslySetInnerHTML={{ __html: rewriteImagesInHtml(post.content) }} />
+              <PostBody dangerouslySetInnerHTML={{ __html: post.content }} />
 
               {post.comments && post.comments.length > 0 && (
                 <CommentsSection>
                   <CommentsTitle>답변</CommentsTitle>
                   {post.comments.map((comment) => (
                     <CommentItem key={comment._id}>
-                      <CommentContent dangerouslySetInnerHTML={{ __html: rewriteImagesInHtml(comment.content) }} />
+                      <CommentContent dangerouslySetInnerHTML={{ __html: comment.content }} />
                     </CommentItem>
                   ))}
                 </CommentsSection>
@@ -211,7 +210,7 @@ const PostDetailModal: React.FC<PostDetailModalProps> = ({
                 </PostMeta>
               </PostHeader>
 
-              <PostBody dangerouslySetInnerHTML={{ __html: rewriteImagesInHtml(post.content) }} />
+              <PostBody dangerouslySetInnerHTML={{ __html: post.content }} />
 
               <ReplySection>
                 <ReplyTitle>답변 작성</ReplyTitle>

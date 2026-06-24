@@ -4,7 +4,6 @@ import styled from 'styled-components';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { adminNoticeAPI, imageAPI } from '../utils/api';
-import { rewriteImageUrl } from '../utils/imageUrl';
 
 const NoticeWritePage: React.FC = () => {
   const navigate = useNavigate();
@@ -200,7 +199,7 @@ const NoticeWritePage: React.FC = () => {
           </UploadSection>
           {thumbnailUrl && (
             <ThumbnailPreview>
-              <PreviewImage src={rewriteImageUrl(thumbnailUrl)} alt="썸네일" />
+              <PreviewImage src={thumbnailUrl} alt="썸네일" />
               <RemoveButton type="button" onClick={handleRemoveThumbnail}>
                 삭제
               </RemoveButton>

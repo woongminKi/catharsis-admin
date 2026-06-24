@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { adminPasserAPI } from '../utils/api';
-import { rewriteImageUrl } from '../utils/imageUrl';
 
 interface Passer {
   _id: string;
@@ -237,7 +236,7 @@ const PassersPage: React.FC = () => {
                 </Td>
                 <Td>{pagination.totalItems - (pagination.currentPage - 1) * 10 - index}</Td>
                 <Td>
-                  <Thumbnail src={rewriteImageUrl(passer.thumbnailUrl)} alt={passer.title} />
+                  <Thumbnail src={passer.thumbnailUrl} alt={passer.title} />
                 </Td>
                 <Td style={{ textAlign: 'left' }}>{passer.title}</Td>
                 <Td>{passer.viewCount}</Td>
